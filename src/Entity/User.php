@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -38,6 +40,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank]
     private ?string $plainPassword  = null;
+
+    #[ORM\Column(length: 100)]
+    private ?string $firstName = null;
+
+    #[ORM\Column(length: 100)]
+    private ?string $lastName = null;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Article::class)]
+    private Collection $articles;
+
+    #[ORM\OneToMany(mappedBy: 'Author', targetEntity: Coment::class)]
+    private Collection $coments;
+
+    public function __construct()
+    {
+        $this->articles = new ArrayCollection();
+        $this->coments = new ArrayCollection();
+    }
 
     public function setPlainPassword(?string $pwd)
     {
@@ -119,5 +139,89 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): self
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): self
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Article>
+     */
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): self
+    {
+        if (!$this->articles->contains($article)) {
+            $this->articles->add($article);
+            $article->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): self
+    {
+        if ($this->articles->removeElement($article)) {
+            // set the owning side to null (unless already changed)
+            if ($article->getAuthor() === $this) {
+                $article->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Coment>
+     */
+    public function getComents(): Collection
+    {
+        return $this->coments;
+    }
+
+    public function addComent(Coment $coment): self
+    {
+        if (!$this->coments->contains($coment)) {
+            $this->coments->add($coment);
+            $coment->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComent(Coment $coment): self
+    {
+        if ($this->coments->removeElement($coment)) {
+            // set the owning side to null (unless already changed)
+            if ($coment->getAuthor() === $this) {
+                $coment->setAuthor(null);
+            }
+        }
+
+        return $this;
     }
 }

@@ -28,12 +28,14 @@ class Category
 
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
-    private Collection $products;
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Article::class)]
+    private Collection $articles;
+
+
 
     public function __construct()
     {
-        $this->products = new ArrayCollection();
+        $this->articles = new ArrayCollection();
     }
 
 
@@ -55,29 +57,29 @@ class Category
     }
 
     /**
-     * @return Collection<int, Product>
+     * @return Collection<int, Article>
      */
-    public function getProducts(): Collection
+    public function getArticles(): Collection
     {
-        return $this->products;
+        return $this->articles;
     }
 
-    public function addProduct(Product $product): self
+    public function addArticle(Article $article): self
     {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
-            $product->setCategory($this);
+        if (!$this->articles->contains($article)) {
+            $this->articles->add($article);
+            $article->setCategory($this);
         }
 
         return $this;
     }
 
-    public function removeProduct(Product $product): self
+    public function removeArticle(Article $article): self
     {
-        if ($this->products->removeElement($product)) {
+        if ($this->articles->removeElement($article)) {
             // set the owning side to null (unless already changed)
-            if ($product->getCategory() === $this) {
-                $product->setCategory(null);
+            if ($article->getCategory() === $this) {
+                $article->setCategory(null);
             }
         }
 
