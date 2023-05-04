@@ -43,13 +43,29 @@ class ArticleRepository extends ServiceEntityRepository
     public function findAll(): ?array
     {
         return $this->createQueryBuilder('c')
-            ->select("c.id, c.title, c.content,c.parution,  p.firstName as author, cate.name as categorie")
+            ->select("c.id, c.title, c.content,c.parution,  p.firstName as author, cate.name as categorie, comment.content as commentaire")
             ->leftjoin('c.author', 'p')
             ->leftjoin('c.category', 'cate')
-            ->leftjoin('c.coments', 'coment')
+            ->leftjoin('c.coments', 'comment')
             ->getQuery()
             ->getResult();
     }
+
+    public function findOneById($value)
+    {
+        return $this->createQueryBuilder('c')
+            ->select("c.id, c.title, c.content as contenu,c.parution,  p.firstName as author, cate.name as categorie, comment.content as commentaire")
+            ->leftjoin('c.author', 'p')
+            ->leftjoin('c.category', 'cate')
+            ->leftjoin('c.coments', 'comment')
+            ->andWhere('c.id = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getResult();
+    }
+
+
+
 
     //    /**
     //     * @return Article[] Returns an array of Article objects

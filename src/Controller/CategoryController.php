@@ -25,14 +25,12 @@ class CategoryController extends AbstractController
     {
 
         $category = $em->getRepository(Category::class)->findRecentCategories();
-
         return new JsonResponse($category);
     }
 
     #[Route('/category', name: 'app_categoryadd', methods: ["POST"])]
     public function add(EntityManagerInterface $em, Request $request, ValidatorInterface $v, LoggerInterface $l): Response
     {
-
         //Verify if user have authorization 
         $headers = $request->headers->all();
 
@@ -127,6 +125,8 @@ class CategoryController extends AbstractController
         }
         return new JsonResponse($category, 200);
     }
+
+
 
 
     #[Route('/category/{id}', name: 'category_delete', methods: ["DELETE"])]
