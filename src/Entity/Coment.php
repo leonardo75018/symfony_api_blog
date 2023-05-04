@@ -31,9 +31,13 @@ class Coment
     #[ORM\JoinColumn(nullable: false)]
     private ?Article $article = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $clear = null;
 
+
+    public function __construct()
+    {
+        $this->created_at = new  \DateTime();
+        $this->state = true;
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -95,18 +99,6 @@ class Coment
     public function setArticle(?Article $article): self
     {
         $this->article = $article;
-
-        return $this;
-    }
-
-    public function getClear(): ?string
-    {
-        return $this->clear;
-    }
-
-    public function setClear(string $clear): self
-    {
-        $this->clear = $clear;
 
         return $this;
     }

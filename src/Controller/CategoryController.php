@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 
@@ -22,13 +23,14 @@ class CategoryController extends AbstractController
     #[Route('/category', name: 'app_category', methods: ["GET"])]
     public function index(EntityManagerInterface $em): Response
     {
-        $category = $em->getRepository(Category::class)->findall();
+
+        $category = $em->getRepository(Category::class)->findRecentCategories();
 
         return new JsonResponse($category);
     }
 
     #[Route('/category', name: 'app_categoryadd', methods: ["POST"])]
-    public function add(EntityManagerInterface $em, Request $request, ValidatorInterface $v): Response
+    public function add(EntityManagerInterface $em, Request $request, ValidatorInterface $v, LoggerInterface $l): Response
     {
 
         //Verify if user have authorization 
@@ -40,6 +42,8 @@ class CategoryController extends AbstractController
 
             try {
                 $decoded = JWT::decode($jwt, new Key($key, "HS256"));
+                $user =  $decoded->user;
+                $l->error(json_encode($user));
             } catch (\Exception $e) {
                 return new JsonResponse($e->getMessage(), 403);
             }

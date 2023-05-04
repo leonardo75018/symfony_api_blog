@@ -45,7 +45,11 @@ class Article
     public function __construct()
     {
         $this->coments = new ArrayCollection();
+        $this->created_at = new  \DateTime();
+        $this->parution = new  \DateTime();
+        $this->state = false;
     }
+
 
     public function getId(): ?int
     {

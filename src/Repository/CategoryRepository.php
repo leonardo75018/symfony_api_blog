@@ -62,6 +62,16 @@ class CategoryRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findRecentCategories($limit = 3)
+    {
+        return $this->createQueryBuilder('c')
+            ->select("c.id, c.name")
+            ->orderBy('c.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
 
 
 
