@@ -55,7 +55,7 @@ class CategoryRepository extends ServiceEntityRepository
     public function findOneById($value)
     {
         return $this->createQueryBuilder('c')
-            ->select("c.id, c.name, arti.title as article")
+            ->select("c.id, c.name, arti.title as article,arti.id as articleId")
             ->leftjoin('c.articles', 'arti')
             ->andWhere('c.id = :val')
             ->setParameter('val', $value)

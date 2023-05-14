@@ -15,11 +15,12 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleController extends AbstractController
 {
 
-    #[Route('/article', name: 'fin_articles', methods: ["GET"])]
+    #[Route('/article', name: 'find_articles', methods: ["GET"])]
     public function index(EntityManagerInterface $em): Response
     {
         $articles = $em->getRepository(Article::class)->findall();
@@ -37,12 +38,8 @@ class ArticleController extends AbstractController
         return new JsonResponse($article, 200);
     }
 
-
-
-
-
     #[Route('/article', name: 'add_article', methods: ["POST"])]
-    public function createArticle(EntityManagerInterface $em, Request $request): Response
+    public function createArticle(EntityManagerInterface $em, Request $request, ValidatorInterface $v): Response
     {
 
         //Verify if user have authorization 
@@ -59,7 +56,7 @@ class ArticleController extends AbstractController
             }
 
             //If user have admin role -> create category else return 
-            if ($decoded->roles != null &&  in_array("ROLE_USER", $decoded->roles)) {
+            if ($decoded->roles != null &&  in_array("ROLE_ADMIN", $decoded->roles)) {
 
                 $user = $em->getRepository(User::class)->findOneBy(["id" => $decoded->user]);
                 if ($user == null) {
@@ -84,18 +81,16 @@ class ArticleController extends AbstractController
             }
         }
 
-
-        return new JsonResponse("Access denied", 403);
+        return new JsonResponse("Access denied. This endpoint is only accessible to users with admin privileges.", 403);
     }
 
     #[Route('/article/{id}', name: 'update_article', methods: ["PATCH"])]
     public function updateArticle(Article $article, EntityManagerInterface $em, Request $request): Response
     {
-        //Verify if user have authorization 
         $headers = $request->headers->all();
 
         if (isset($headers["token"]) && !empty($headers["token"])) {
-            $jwt = current($headers["token"]); //Récupére la cellule 0 avec current()
+            $jwt = current($headers["token"]);
             $key = $this->getParameter("jwt_secret");
 
             try {
@@ -103,9 +98,7 @@ class ArticleController extends AbstractController
             } catch (\Exception $e) {
                 return new JsonResponse($e->getMessage(), 403);
             }
-
-            //If user have admin role -> create category else return 
-            if ($decoded->roles != null &&  in_array("ROLE_USER", $decoded->roles)) {
+            if ($decoded->roles != null &&  in_array("ROLE_ADMIN", $decoded->roles)) {
 
                 $user = $em->getRepository(User::class)->findOneBy(["id" => $decoded->user]);
                 if ($user == null) {
@@ -130,18 +123,38 @@ class ArticleController extends AbstractController
         }
 
 
-        return new JsonResponse("Access denied", 403);
+        return new JsonResponse("Access denied. This endpoint is only accessible to users with admin privileges.", 403);
     }
 
     #[Route('/article/{id}', name: 'delete_article', methods: ["DELETE"])]
-    public function deleteArticle(Article $article = null, EntityManagerInterface $em,): Response
+    public function deleteArticle(Article $article = null, EntityManagerInterface $em, Request $request): Response
     {
-        if ($article == null) {
-            return new JsonResponse("Article not found", 404);
-        }
-        $em->remove($article);
-        $em->flush();
 
-        return new JsonResponse("Article deleted", 201);
+
+        $headers = $request->headers->all();
+
+        if (isset($headers["token"]) && !empty($headers["token"])) {
+            $jwt = current($headers["token"]); //Récupére la cellule 0 avec current()
+            $key = $this->getParameter("jwt_secret");
+
+            try {
+                $decoded = JWT::decode($jwt, new Key($key, "HS256"));
+                $user =  $decoded->user;
+            } catch (\Exception $e) {
+                return new JsonResponse($e->getMessage(), 403);
+            }
+
+            if ($decoded->roles != null &&  in_array("ROLE_ADMIN", $decoded->roles)) {
+                if ($article == null) {
+                    return new JsonResponse("Article not found", 404);
+                }
+                $em->remove($article);
+                $em->flush();
+
+                return new JsonResponse("Article deleted", 201);
+            }
+        }
+
+        return new JsonResponse("Access denied. This endpoint is only accessible to users with admin privileges.", 403);
     }
 }

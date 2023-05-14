@@ -22,8 +22,8 @@ class Category
     #[Assert\Length(
         min: 1,
         max: 100,
-        minMessage: "You message  {{limit}} ",
-        maxMessage: "You message   {{limit}} ",
+        minMessage: 'Your first name must be at least {{ limit }} characters long',
+        maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
     )]
 
     private ?string $name = null;
